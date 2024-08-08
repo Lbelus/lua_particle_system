@@ -63,12 +63,14 @@ function EMITER:new()
 	return emiter
 end
 
-function EMITER:emit()
 
 
 function main()
 	print("begin particle test")
-	local blue_spark = PARTICLE:new(1, 1, 60, 10, 100, 'blue')  -- Add a velocity value
+	
+	local blue_spark_pd = PARTICLE_DESCRIPTOR:new(1, 1, 60, 10, 100, 'blue')
+
+	local blue_spark = PARTICLE:new(blue_spark_pd)  -- Add a velocity value
 	for index = 1, 10 do
 		blue_spark:update(1)  -- Simulate updating with delta time of 1
 		blue_spark:print_pos()
