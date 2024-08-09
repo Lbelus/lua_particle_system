@@ -24,12 +24,11 @@ function PARTICLE_DESCRIPTOR:new(x, y, life, angle, velocity, color)
 	return pd
 end
 
-
 PARTICLE = MODIFIER:new()
 
 function PARTICLE:new(pd)
 	local pcle = {}
-	pcle.position = pd.position
+	pcle.position = {x = pd.position.x, y = pd.position.y}  -- Make a copy of the position table
 	pcle.life = pd.life
 	local angle_radian = pd.angle * math.pi / 180
 	pcle.velocity = {
@@ -52,30 +51,59 @@ function PARTICLE:print_pos()
 	print("Particle position - x: " .. self.position.x .. ", y: " .. self.position.y)
 end
 
+EMITTER_CONFIG = {}
 
-
-EMITER = {}
-
-function EMITER:new()
-	local emiter = {}
-	setmetatable(emiter, self)
+function EMITTER_CONFIG:new(total_particles)
+	local config = {}
+	config.total_particles = total_particles
+	setmetatable(config, self)
 	self.__index = self
-	return emiter
+	return config
 end
 
+EMITTER = {}
 
+function EMITTER:new(config, pd)
+	local emitter = {}
+	emitter.config = config
+	emitter.particle_pool = {}
+	for index = 1, config.total_particles do
+		table.insert(emitter.particle_pool, PARTICLE:new(pd))
+	end
+	setmetatable(emitter, self)
+	self.__index = self
+	return emitter
+end
 
-function main()
-	print("begin particle test")
-	
-	local blue_spark_pd = PARTICLE_DESCRIPTOR:new(1, 1, 60, 10, 100, 'blue')
+function IS_EMPTY(table)
+    return next(table) == nil
+end
 
-	local blue_spark = PARTICLE:new(blue_spark_pd)  -- Add a velocity value
-	for index = 1, 10 do
-		blue_spark:update(1)  -- Simulate updating with delta time of 1
-		blue_spark:print_pos()
+function EMITTER:emit(particle)
+	table.insert(self.particle_pool, particle)
+end
+
+function EMITTER:update(delta)
+	local particle = table.remove(self.particle_pool)
+	if particle then
+		particle:update(delta)
+		particle:print_pos()
+		-- Reinsert the particle to the pool if it still has life
+		if particle.life > 0 then
+			self:emit(particle)
+		end
 	end
 end
 
+function main()
+	print("begin emitter test")
+	local config = EMITTER_CONFIG:new(10)
+	local blue_spark_pd = PARTICLE_DESCRIPTOR:new(1, 1, 2, 60, 10, 'blue')
+	local blue_spark_emitter = EMITTER:new(config, blue_spark_pd)
+	for i = 1, 10 do
+		blue_spark_emitter:update(1)
+	end
+end
 
 main()
+
