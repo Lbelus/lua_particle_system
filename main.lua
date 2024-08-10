@@ -28,7 +28,7 @@ PARTICLE = MODIFIER:new()
 
 function PARTICLE:new(pd)
 	local pcle = {}
-	pcle.position = {x = pd.position.x, y = pd.position.y}  -- Make a copy of the position table
+	pcle.position = {x = pd.position.x, y = pd.position.y}
 	pcle.life = pd.life
 	local angle_radian = pd.angle * math.pi / 180
 	pcle.velocity = {
@@ -88,7 +88,6 @@ function EMITTER:update(delta)
 	if particle then
 		particle:update(delta)
 		particle:print_pos()
-		-- Reinsert the particle to the pool if it still has life
 		if particle.life > 0 then
 			self:emit(particle)
 		end
